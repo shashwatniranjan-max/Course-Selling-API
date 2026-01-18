@@ -1,85 +1,50 @@
-const espress = require("express");
+const express = require("express");
 const app = express();
-app.use(express.json);
-import { parse } from "dotenv";
-import {z} from zod;
-const bcrypt = require("bcrypt");
-const {UserModel, CourseModel} = require("./db");
+
+// Middleware
+app.use(express.json());
+
+// Environment configuration
 require("dotenv").config();
-const JWT_SECRET = process.env.JWT_SECRET;
+
+// Routes
+const courseRouter = require("./courseRoute");
+const userRouter = require("./userRoute");
+
+app.use("/user", userRouter);
+app.use("/course", courseRouter);
+
+// Protected route to get current user info
 const auth = require("./auth");
+const { UserModel } = require("./db");
 
-app.post("/user/signup", async function(req, res) {
-    const requiredBody = z.object({
-       name : z.string().min(5).max(25),
-       email : z.email().min(7).max(50),
-       password : z.string()
-    })
+app.get("/me", auth, async function(req, res) {
     try {
-        const parseDataWithSuccess = requiredBody.safeParse(req.body, {strict : true});
-        if(!parseDataWithSuccess.success) {
-            console.log(parseDataWithSuccess.error.message);
-            return res.status(400).json({msg : "Incorrect format", error : parseDataWithSuccess.error.message})
+        const userId = req.userId;
+        const user = await UserModel.findById(userId).select("-password");
+        
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
         }
-        const {name , email, password} = parseDataWithSuccess.data;
-        const foundUser = await UserModel.findOne({
-            email
-        })
-        if(foundUser) {
-            return res.json({msg : "User already exists"})
-        }
-        const hashedPassword = await bcrypt.hash(password, 10);
-        await UserModel.create({
-            name : name,
-            email : email,
-            password : hashedPassword
-        })
+
         res.json({
-            msg : "Signed up"
-        })
-    }catch(err) {
-        res.status(403).json({
-            msg : "error occurred",
-            error : err.message
-        })
+            message: "User retrieved successfully",
+            user: user
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Error fetching user",
+            error: error.message
+        });
     }
-})
+});
 
-app.post("/user/signin", async function(req, res) {
-    const email = req.body.email;
-    const password = req.body.password;
-    const foundUser = await UserModel.findOne({
-        email 
-    })
-    if(!foundUser) return res.status(403).json({
-        msg :"Incorrect credentials"
-    })
-    const isTrue = await bcrypt.compare(password, foundUser.password);
-    if(!isTrue) {
-        return res.status(403).json({msg : "Incorrect password"})
-    }
-    const token = jwt.sign({
-        userId : foundUser._id
-    }, JWT_SECRET)
+// Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
 
-    res.json({
-        msg : "signed in",
-        token : token
-    })
-})
-
-app.get("/user/purchases", auth, async function(req, res) {
-
-})
-
-app.get("/courses", auth, async function(req, res) {
-   
-})
-
-app.post("/courses/purchase", auth, async function(req, res) {
-    
-})
-
-app.get("/me", async function(req, res) {
-    
-})
+module.exports = app;
