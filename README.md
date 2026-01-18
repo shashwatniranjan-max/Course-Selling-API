@@ -184,6 +184,8 @@ ISC License
 
 ## 👤 Author
 
+**shashwatniranjan-max**
+
 Built with ❤️ for learning and development
 
 ---
