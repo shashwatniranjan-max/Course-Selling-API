@@ -1,16 +1,41 @@
 const mongoose = require("mongoose");
+const { float32 } = require("zod");
 const Schema = mongoose.Schema;
 const ObjectId = Schema.ObjectId;
 
 const user = new Schema({
-    name: {
+    Firstname: {
+        type: String,
+        required: true
+    },
+    Lastname: {
         type: String,
         required: true
     },
     email: {
         type: String,
-        unique: true,
+        required: true,
+        unique: true
+    },
+    password: {
+        type: String,
         required: true
+    }
+})
+
+const admin = new Schema({
+    Firstname: {
+        type: String,
+        required: true
+    },
+    Lastname: {
+        type: String,
+        required: true
+    },
+    email: {
+        type: String,
+        required: true,
+        unique: true
     },
     password: {
         type: String,
@@ -21,22 +46,25 @@ const user = new Schema({
 const course = new Schema({
     title: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     description: {
         type: String,
         required: true
     },
+    creatorId: {
+        type: ObjectId,
+        required: true,
+        ref: "admin"
+    },
+    imageUrl: {
+        type: String,
+        unique: true
+    },
     price: {
         type: Number,
         required: true
-    },
-    imageUrl: {
-        type: String
-    },
-    creatorId: {
-        type: ObjectId,
-        ref: "admin"
     }
 })
 
@@ -53,30 +81,7 @@ const purchase = new Schema({
     }
 })
 
-const admin = new Schema({
-    name: {
-        type: String,
-        required: true
-    },
-    email: {
-        type: String,
-        unique: true,
-        required: true
-    },
-    password: {
-        type: String,
-        required: true
-    }
-})
-
-const userModel = mongoose.model("user", user);
-const courseModel = mongoose.model("course", course);
-const purchaseModel = mongoose.model("purchase", purchase);
-const adminModel = mongoose.model("admin", admin);
-
-module.exports = {
-    userModel,
-    courseModel,
-    purchaseModel,
-    adminModel
-}
+const UserModel = mongoose.model("user", user);
+const AdminModel = mongoose.model("admin", admin);
+const CourseModel = mongoose.model("course", course);
+const PurchaseModel = mongoose.model("purchase", purchase);

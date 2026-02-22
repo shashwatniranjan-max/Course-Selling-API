@@ -1,20 +1,19 @@
-const {Router} = require('express');
+const {Router} = require("express")
 const userRouter = Router();
 
-userRouter.post("/user/signup", Validation(signupSchema), async function(req, res, next) {
-    const {name, email, password} = req.body;
-    const foundUser = await 
+userRouter.post("/signup", (req, res, next) => {
+    res.send("signup endpoint")
 })
 
-userRouter.post("/user/signin", Validation(signinSchema), async function(req, res, next) {
-    
+userRouter.post("/signin", (req, res, next) => {
+    res.send("signin endpoint")
+})
+
+userRouter.get("/purchases", (req, res, next) => {
+    res.send("purchases endpoint");
 })
 
 
-userRouter.get("/Courses", async function(req, res, next) {
-
-})
-
-userRouter.get("/user/purchases", async function(req, res, next) {
-
-})
+module.exports = {
+    userRouter
+}
