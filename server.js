@@ -4,9 +4,6 @@ const MONGO_URL = process.env.MONGO_URL;
 const JWT_SECRET = process.env.JWT_SECRET;
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
-mongoose.connect(MONGO_URL)
-    .then(() => console.log("DB connected"))
-    .catch((err) => console.log("Error connecting the database", err));
 
 const jwt = require("jsonwebtoken");
 const {userModel, courseModel, purchaseModel} = require("./db");
@@ -168,8 +165,18 @@ app.use("/api/v1/admin", adminRouter);
 //     }
 // });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+(async function() {
+    try {
+        await mongoose.connect(process.env.MONGO_URL);
+        console.log("DB connected")
+        const PORT = process.env.PORT || 3000;
+        app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
+    }catch(err) {
+        console.log(`failed to restart the server: `, err.message);
+        process.exit(1);
+    }
+}) ();
+
 
